@@ -62,8 +62,8 @@ def main():
             )
             if img_main:
                 images_list.append({
-                    "sample":         f"/assets/samples/{subfolder}/{img_main}",
-                    "sample_nag":     f"/assets/samples/{subfolder}/{img_neg}" if img_neg else "",
+                    "sample":         f"./assets/samples/{subfolder}/{img_main}",
+                    "sample_nag":     f"./assets/samples/{subfolder}/{img_neg}" if img_neg else "",
                     "prompt":         prompt,
                     "negative_prompt": neg_prompt,
                     "cfg_negative_prompt": cfg_neg_prompt,
@@ -84,8 +84,8 @@ def main():
             )
             if vid_main:
                 videos_list.append({
-                    "sample":         f"/assets/samples/{subfolder}/{vid_main}",
-                    "sample_nag":     f"/assets/samples/{subfolder}/{vid_neg}" if vid_neg else "",
+                    "sample":         f"./assets/samples/{subfolder}/{vid_main}",
+                    "sample_nag":     f"./assets/samples/{subfolder}/{vid_neg}" if vid_neg else "",
                     "prompt":         prompt,
                     "negative_prompt": neg_prompt,
                     "cfg_negative_prompt": cfg_neg_prompt,
