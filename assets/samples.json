@@ -1,0 +1,172 @@
+{
+  "gridFluxSchnell": {
+    "images": [
+      {
+        "sample": "/assets/samples/flux-schnell_4-step/0.png",
+        "sample_nag": "/assets/samples/flux-schnell_4-step/0_nag.png",
+        "prompt": "An elegant dress fluttering under the sea.",
+        "negative_prompt": "Woman.",
+        "cfg_negative_prompt": ""
+      },
+      {
+        "sample": "/assets/samples/flux-schnell_4-step/1.png",
+        "sample_nag": "/assets/samples/flux-schnell_4-step/1_nag.png",
+        "prompt": "A baby phoenix made of fire and flames is born from the smoking ashes.",
+        "negative_prompt": "Low resolution, blurry.",
+        "cfg_negative_prompt": ""
+      },
+      {
+        "sample": "/assets/samples/flux-schnell_4-step/2.png",
+        "sample_nag": "/assets/samples/flux-schnell_4-step/2_nag.png",
+        "prompt": "A corgi with flower crown.",
+        "negative_prompt": "Pink and white flowers.",
+        "cfg_negative_prompt": ""
+      },
+      {
+        "sample": "/assets/samples/flux-schnell_4-step/3.png",
+        "sample_nag": "/assets/samples/flux-schnell_4-step/3_nag.png",
+        "prompt": "A surreal, modern, small fluffy couch made entirely of pale peach fluffy cloud, shaped like a cumulus cloud. The chair has four minimalist legs, standing on a seamless solid muted coral background. Clean and minimalistic, with soft lighting. ultra high resolution, product design aesthetic, concept art. Shot by Sony α7R IV, contrast with highlight, casting realism sunlight, sharp focus, clear detailed, cinematic, glamorous, editorial shoot, 16K, rich detail",
+        "negative_prompt": "Low resolution, blurry.",
+        "cfg_negative_prompt": ""
+      },
+      {
+        "sample": "/assets/samples/flux-schnell_4-step/4.png",
+        "sample_nag": "/assets/samples/flux-schnell_4-step/4_nag.png",
+        "prompt": "Portrait of AI researcher.",
+        "negative_prompt": "Male.",
+        "cfg_negative_prompt": ""
+      },
+      {
+        "sample": "/assets/samples/flux-schnell_4-step/5.png",
+        "sample_nag": "/assets/samples/flux-schnell_4-step/5_nag.png",
+        "prompt": "Sketch of UFO over pyramid.",
+        "negative_prompt": "Realistic, complex.",
+        "cfg_negative_prompt": ""
+      }
+    ],
+    "videos": []
+  },
+  "gridLargeTurbo": {
+    "images": [
+      {
+        "sample": "/assets/samples/sd3.5-large-turbo_8-step/0.png",
+        "sample_nag": "/assets/samples/sd3.5-large-turbo_8-step/0_nag.png",
+        "prompt": "A beautiful cyborg.",
+        "negative_prompt": "Robot.",
+        "cfg_negative_prompt": ""
+      },
+      {
+        "sample": "/assets/samples/sd3.5-large-turbo_8-step/1.png",
+        "sample_nag": "/assets/samples/sd3.5-large-turbo_8-step/1_nag.png",
+        "prompt": "Close-up portrait of a woman illuminated by soft, warm afternoon light streaming through window blinds, creating striking shadow patterns across her face. She has a natural, glowing complexion with dewy skin. The background features muted teal walls that enhance the warmth of the scene. She wears a dark, pinstriped blazer, adding a touch of elegance. The overall aesthetic is hyperrealistic, capturing intricate details like the texture of her skin and the delicate play of light and shadow, with a color palette of warm neutrals and soft pastels.",
+        "negative_prompt": "Low resolution, blurry.",
+        "cfg_negative_prompt": ""
+      }
+    ],
+    "videos": []
+  },
+  "gridFluxDev": {
+    "images": [
+      {
+        "sample": "/assets/samples/flux-dev_25-step/1.png",
+        "sample_nag": "/assets/samples/flux-dev_25-step/1_nag.png",
+        "prompt": "A realistic neon sign at night in a futuristic city. The big letters \"NAG\" and the small words \"Normalized Attention Guidance: Universal Negative Guidance for Diffusion Models.\"",
+        "negative_prompt": "Low resolution, blurry.",
+        "cfg_negative_prompt": ""
+      },
+      {
+        "sample": "/assets/samples/flux-dev_25-step/2.png",
+        "sample_nag": "/assets/samples/flux-dev_25-step/2_nag.png",
+        "prompt": "A sustainable future city with plants on Mars.",
+        "negative_prompt": "Mars.",
+        "cfg_negative_prompt": ""
+      }
+    ],
+    "videos": []
+  },
+  "gridLarge": {
+    "images": [
+      {
+        "sample": "/assets/samples/sd3.5-large_25-step/0.png",
+        "sample_nag": "/assets/samples/sd3.5-large_25-step/0_nag.png",
+        "prompt": "A llama-bird hybrid creature flying in the sky. Llama head, bird body.",
+        "negative_prompt": "Llama body.",
+        "cfg_negative_prompt": ""
+      },
+      {
+        "sample": "/assets/samples/sd3.5-large_25-step/1.png",
+        "sample_nag": "/assets/samples/sd3.5-large_25-step/1_nag.png",
+        "prompt": "A tiny astronaut hatching from an egg on the moon.",
+        "negative_prompt": "Low resolution, blurry.",
+        "cfg_negative_prompt": ""
+      }
+    ],
+    "videos": []
+  },
+  "gridWanT2V": {
+    "images": [],
+    "videos": [
+      {
+        "sample": "/assets/samples/wan21-t2v_25-step/0.mp4",
+        "sample_nag": "/assets/samples/wan21-t2v_25-step/0_nag.mp4",
+        "prompt": "An anthropomorphic cat thoughtfully paints an oil self-portrait on canvas, capturing its likeness with delicate brushstrokes inside a warmly lit, artistically cluttered studio.",
+        "negative_prompt": "Human face, low resolution, blurry.",
+        "cfg_negative_prompt": ""
+      },
+      {
+        "sample": "/assets/samples/wan21-t2v_25-step/1.mp4",
+        "sample_nag": "/assets/samples/wan21-t2v_25-step/1_nag.mp4",
+        "prompt": "An origami fox running in the forest. The fox is made of polygons. speed and passion. realistic.",
+        "negative_prompt": "Static, low resolution, blurry.",
+        "cfg_negative_prompt": ""
+      },
+      {
+        "sample": "/assets/samples/wan21-t2v_25-step/2.mp4",
+        "sample_nag": "/assets/samples/wan21-t2v_25-step/2_nag.mp4",
+        "prompt": "The video begins with a roll of seemingly ordinary toilet paper on a modern bathroom countertop. As the camera zooms in, a hand holding a knife slices through the roll, revealing it to be a cake. The cut exposes multiple layers of cake and filling inside. This visual illusion art is both surprising and delightful, blending everyday objects with creative craftsmanship for an engaging and fun reveal.",
+        "negative_prompt": "Low resolution, blurry.",
+        "cfg_negative_prompt": ""
+      },
+      {
+        "sample": "/assets/samples/wan21-t2v_25-step/3.mp4",
+        "sample_nag": "/assets/samples/wan21-t2v_25-step/3_nag.mp4",
+        "prompt": "In this video, a statue stands in a picturesque outdoor setting. At the start, its wings are motionless but gleam under the light. As the video progresses, the statue begins to transform—cracks appear, glowing effects intensify, and it gradually shatters into countless fragments, creating a breathtaking visual spectacle.",
+        "negative_prompt": "Static, low resolution, blurry.",
+        "cfg_negative_prompt": ""
+      },
+      {
+        "sample": "/assets/samples/wan21-t2v_25-step/4.mp4",
+        "sample_nag": "/assets/samples/wan21-t2v_25-step/4_nag.mp4",
+        "prompt": "Enormous glowing jellyfish float slowly across a sky filled with soft clouds. Their tentacles shimmer with iridescent light as they drift above a peaceful mountain landscape. Magical and dreamlike, captured in a wide shot. Surreal realism style with detailed textures.",
+        "negative_prompt": "Low resolution, blurry.",
+        "cfg_negative_prompt": ""
+      },
+      {
+        "sample": "/assets/samples/wan21-t2v_25-step/5.mp4",
+        "sample_nag": "/assets/samples/wan21-t2v_25-step/5_nag.mp4",
+        "prompt": "A robot is riding on a skateboard in a cyberpunk city. Close-up captures speed and passion. realistic.",
+        "negative_prompt": "Static, low resolution, blurry.",
+        "cfg_negative_prompt": ""
+      }
+    ]
+  },
+  "gridWanI2V": {
+    "images": [],
+    "videos": [
+      {
+        "sample": "/assets/samples/wan21-i2v_25-step/0.mp4",
+        "sample_nag": "/assets/samples/wan21-i2v_25-step/0_nag.mp4",
+        "prompt": "A tiny ginger cat sits in an open field. Suddenly, a UFO appears above, emitting a soft, glowing blue beam of light that envelops the cat. the cat is slowly lifted off the ground into the hovering spacecraft. The UFO ascends and disappears, leaving the empty field in silence. Moody, dramatic lighting, atmospheric realism, cinematic visual storytelling.",
+        "negative_prompt": "Cat, static, low resolution, blurry.",
+        "cfg_negative_prompt": ""
+      },
+      {
+        "sample": "/assets/samples/wan21-i2v_25-step/1.mp4",
+        "sample_nag": "/assets/samples/wan21-i2v_25-step/1_nag.mp4",
+        "prompt": "A vibrant red fox with thick fur dashes through a ruin, its bright eyes focused and ears pinned back in full sprint. The illustration, rendered in a fantasy style, uses dynamic blur to simulate a camera tracking the fox’s rapid movement, capturing the trail of dust kicked up in its wake. The sense of speed and mystery. This scene is filled with motion and energy.",
+        "negative_prompt": "Static, low resolution, blurry.",
+        "cfg_negative_prompt": ""
+      }
+    ]
+  }
+}

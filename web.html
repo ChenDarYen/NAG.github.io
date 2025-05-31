@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Normalized Attention Guidance: Universal Negative Guidance for Diffusion Models</title>
+
+    <meta name="description" content="Normalized Attention Guidance: Universal Negative Guidance for Diffusion Models.">
+    <meta name="keywords" content="Normalized Attention Guidance, NAG, Diffusion Models, Negative Guidance, Few-Step Sampling, Single-Step Sampling, Guidance">
+    <meta name="author" content="Dar-Yen Chen, Hmrishav Bandyopadhyay, Kai Zou, Yi-Zhe Song">
+    <meta property="og:title" content="Normalized Attention Guidance: Universal Negative Guidance for Diffusion Models">
+
+    <style>
+        /* ─── Palette ────────────────────────────────────────── */
+        :root {
+            --background: #0d0d0d;
+            --accent: #d8b65e;
+            --offset-white: #f4f4f2;
+            --offset-white-alpha: rgba(244, 244, 242, 0.8);
+            --grey-mid: #333;
+        }
+
+        /* ─── Reset & Base ───────────────────────────────────── */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: var(--background);
+            color: var(--offset-white);
+            font-family: "Segoe UI", sans-serif;
+            line-height: 1.6;
+        }
+
+        /* ── Ghost scrollbar for full page ───────────────────── */
+
+        /* 1) Base: completely invisible scrollbars & thumbs */
+        ::-webkit-scrollbar,
+        ::-webkit-scrollbar-thumb {
+            opacity: 0;
+            transition: opacity .3s;
+        }
+
+        /* 2) Reveal when you hover anywhere on the page */
+        html:hover::-webkit-scrollbar,
+        html:hover::-webkit-scrollbar-thumb {
+            opacity: 1;
+        }
+
+        /* 3) Dimensions & colors */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent);
+            border-radius: 4px;
+        }
+
+        /* ── Firefox support ─────────────────────────────────── */
+        html {
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent) rgba(0, 0, 0, 0.2);
+        }
+
+        /* on hover the same colors still apply */
+        html:hover {
+            scrollbar-color: var(--accent) rgba(0, 0, 0, 0.2);
+        }
+
+        /* ─── Hero / Headline ────────────────────────────────── */
+        .guiding-line {
+            height: 1px;
+            width: 75%;
+            min-width: 650px;
+            max-width: 700px;
+            background-color: rgba(255, 255, 255, 0.1); /* 10% opacity white on dark bg */
+            margin: 10px 0; /* space between the line and your title */
+        }
+
+        header.hero {
+            position: relative; /* anchor for badge */
+            padding: 120px 100px 40px;
+            margin: 0 200px 60px;
+        }
+
+        .header-left h1 {
+            font-weight: 300;
+        }
+
+        .letter {
+            color: var(--accent);
+            font-size: 3.5rem;
+            font-weight: 700;
+        }
+
+        .letter-small {
+            font-size: 1.8rem;
+            font-weight: 300;
+        }
+
+        h1 span + span {
+            margin-right: .5rem;
+        }
+
+        h2.page-title {
+            font-size: 1.6rem;
+            font-weight: 300;
+            color: var(--offset-white-alpha);
+            margin-top: 10px;
+        }
+
+        /* ─── Ghost Link Buttons ─────────────────────────────── */
+        .link-group {
+            margin-top: 20px;
+            display: inline-flex;
+            gap: 15px;
+        }
+
+        .link-button {
+            display: flex;
+            align-items: center;
+            height: 28px;
+            background: transparent;
+            border: 2px solid var(--accent);
+            border-radius: 4px;
+            color: var(--accent);
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            opacity: .7;
+            transition: background .2s, transform .2s, box-shadow .2s;
+        }
+
+        .link-button:hover {
+            background: var(--accent);
+            color: var(--background);
+            transform: translateY(-2px);
+            box-shadow: 0 0 14px rgba(216, 182, 94, .35);
+            opacity: 1;
+        }
+
+        .link-button-left {
+            width: 32px;
+            height: 28px;
+            background: var(--accent);
+            border-top-left-radius: 2px;
+            border-bottom-left-radius: 2px;
+            flex-shrink: 0;
+            margin-right: 8px;
+        }
+
+        .link-button-text {
+            padding: 0 16px;
+            line-height: 28px;
+        }
+
+        /* ─── Provenance Badge ───────────────────────────────── */
+        .provenance {
+            position: absolute;
+            top: 40px;
+            right: 0;
+            text-align: right;
+            line-height: 1.4;
+        }
+
+        .lab-name {
+            display: block;
+            font-size: 1.125rem;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+            font-weight: 500;
+            color: var(--offset-white-alpha);
+            margin-bottom: .25rem;
+        }
+
+        .authors {
+            list-style: none;
+            margin-top: 1rem;
+        }
+
+        .authors li + li {
+            margin-top: 2px;
+        }
+
+        .authors a {
+            font-size: .875rem;
+            font-weight: 300;
+            color: var(--offset-white-alpha);
+            opacity: .8;
+            text-decoration: none;
+            transition: opacity .2s, text-shadow .2s;
+        }
+
+        .authors a:hover {
+            opacity: 1;
+            text-shadow: 0 0 6px var(--offset-white-alpha);
+        }
+
+        /* ─── Content Sections ───────────────────────────────── */
+        .divider–gradient {
+            border: none;
+            height: 2px;
+            margin: 90px 100px 60px;
+            background: linear-gradient(
+                    to right,
+                    transparent,
+                    var(--accent),
+                    transparent
+            );
+            opacity: .45;
+        }
+
+        section {
+            margin: 20px 0;
+        }
+
+        section h2 {
+            color: var(--accent);
+            font-size: 2rem;
+            margin: 60px 200px 5px;
+        }
+
+        p.intro {
+            margin: 0 200px 20px;
+            font-size: 1rem;
+            color: rgba(244, 244, 242, .7);
+        }
+
+        h3.subsection {
+            margin: 40px 200px 20px;
+            font-size: 1.5rem;
+            color: rgba(244, 244, 242, .6);
+            font-weight: normal;
+        }
+
+        .single-image {
+            margin: 60px 200px 0;
+            text-align: center;
+        }
+
+        .single-image img {
+            width: 80%;
+            min-width: 600px;
+            height: auto;
+        }
+
+        /* ── Computational Cost Section ───────────────────────── */
+        /* wrap for horizontal scroll on small screens */
+        .table-wrapper {
+            margin: 40px 200px 0;
+            overflow-x: auto;
+        }
+
+        /* table styling */
+        .cost-table {
+            margin: 0 auto;
+            width: 80%;
+            min-width: 600px;
+            border-collapse: collapse;
+            color: var(--offset-white);
+        }
+
+        .cost-table th,
+        .cost-table td {
+            padding: 12px 16px;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        /* header row accent */
+        .cost-table thead th {
+            border-bottom: 2px solid var(--accent);
+            color: var(--accent);
+            font-weight: 500;
+        }
+
+        /* row borders */
+        .cost-table tbody tr + tr td {
+            border-top: 1px solid var(--grey-mid);
+        }
+
+        /* optional hover highlight */
+        .cost-table tbody tr:hover td {
+            background: rgba(216, 182, 94, 0.05);
+        }
+
+        /* ─── Grid & Cards ───────────────────────────────────── */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 3px;
+            margin: 0 30px;
+        }
+
+        .pair {
+            position: relative;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            overflow: hidden;
+            background: var(--grey-mid);
+        }
+
+        .pair img,
+        .pair video {
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+        }
+
+        /* wrap each media in a positioned container */
+        .pair .media-wrapper {
+            position: relative;
+            flex: 1; /* so two wrappers share the row equally */
+            overflow: hidden;
+        }
+
+        /* ghost‐outline pill badge */
+        .pair .badge {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            padding: 2px 8px;
+            background: var(--background);
+            color: var(--offset-white-alpha);
+            font-size: .75rem;
+            font-weight: 500;
+            border-radius: 8px;
+            pointer-events: none;
+            z-index: 2;
+            opacity: .7;
+        }
+
+        /* overlay + icon-btn share absolute position & fade */
+        .overlay,
+        .icon-btn {
+            position: absolute;
+            opacity: 0;
+            transition: opacity .3s;
+            pointer-events: none;
+        }
+
+        /* overlay background & text */
+        .overlay {
+            inset: 0;
+            background: rgba(0, 0, 0, .8);
+            color: var(--offset-white);
+            max-height: 100%;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            z-index: 2;
+        }
+
+        .pair-image .overlay {
+            padding: 75px 40px 25px;
+        }
+
+        .pair-video .overlay {
+            padding: 45px 40px 15px;
+        }
+
+        .overlay .desc-block {
+            margin-bottom: 20px;
+        }
+
+        .overlay .label {
+            display: block;
+            color: var(--offset-white-alpha);
+            opacity: .8;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .overlay .text {
+            display: block;
+        }
+
+        /* base: invisible */
+        .overlay::-webkit-scrollbar,
+        .overlay::-webkit-scrollbar-thumb {
+            opacity: 0;
+            transition: opacity .3s;
+        }
+
+        /* when hovering the overlay, reveal it */
+        .overlay:hover::-webkit-scrollbar,
+        .overlay:hover::-webkit-scrollbar-thumb {
+            opacity: 1;
+        }
+
+        /* dimensions & colors */
+        .overlay::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .overlay::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .overlay::-webkit-scrollbar-thumb {
+            background: var(--accent);
+            border-radius: 4px;
+        }
+
+        /* Firefox */
+        .overlay {
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent) rgba(0, 0, 0, 0.2);
+        }
+
+        /* reveal on hover via alpha */
+        .overlay:hover {
+            scrollbar-color: var(--accent) rgba(0, 0, 0, 0.2);
+        }
+
+        /* ─── Icon‐Buttons (zoom & close) ─────────────────────── */
+        .icon-btn {
+            bottom: 12px;
+            right: 12px;
+            width: 32px;
+            height: 32px;
+            background: rgba(0, 0, 0, .6);
+            border: none;
+            border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            pointer-events: auto;
+            z-index: 3;
+            transition: background .2s, transform .1s;
+        }
+
+        .icon-btn.corner-close {
+            top: 12px;
+            right: 12px;
+            z-index: 11;
+            opacity: 1;
+        }
+
+        .icon-btn svg {
+            width: 22px;
+            height: 22px;
+            color: var(--offset-white);
+        }
+
+        .icon-btn:hover {
+            background: rgba(255, 255, 255, .1);
+            transform: translateY(-1px);
+        }
+
+        .icon-btn:active {
+            transform: translateY(0);
+        }
+
+        /* close‐button override */
+        .corner-close {
+            top: 8px;
+            right: 8px;
+            bottom: auto;
+        }
+
+        /* show overlay & buttons on hover */
+        .pair:hover .overlay,
+        .pair:hover .icon-btn {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* ─── Modal ───────────────────────────────────────────── */
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        .modal .content {
+            display: flex;
+            flex-wrap: nowrap;
+            justify-content: center;
+            align-items: center;
+            gap: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--background);
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .modal .content img,
+        .modal .content video {
+            padding-top: 40px;
+            max-width: 45%;
+            max-height: 90%;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            justify-self: center;
+            align-self: center;
+        }
+
+        /* ─── Footer ──────────────────────────────────────────── */
+        .site-footer {
+            width: 100%;
+            height: 300px;
+            background: var(--background); /* or whatever placeholder bg you like */
+        }
+
+        /* ─── Responsive ──────────────────────────────────────── */
+        @media (max-width: 1024px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .provenance {
+                position: static;
+                margin: 24px auto 0;
+                text-align: center;
+                pointer-events: auto;
+            }
+        }
+    </style>
+
+</head>
+
+<body>
+<!-- ─ Hero ─ -->
+<header class="hero">
+    <div class="header-left">
+        <h1>
+            <span class="letter">N</span><span class="letter-small">ormalized</span>
+            <span class="letter">A</span><span class="letter-small">ttention</span>
+            <span class="letter">G</span><span class="letter-small">uidance</span>
+        </h1>
+        <h2 class="page-title">Universal Negative Guidance for Diffusion Models</h2>
+
+        <div class="guiding-line"></div>
+
+        <div class="link-group">
+            <a class="link-button" href="https://arxiv.org/abs/2505.21179" target="_blank" rel="noopener noreferrer">
+                <span class="link-button-text">Paper</span>
+            </a>
+<!--            <a class="link-button" href="#" target="_blank" rel="noopener noreferrer">-->
+<!--                <span class="link-button-text">Demo (soon)</span>-->
+<!--            </a>-->
+<!--            <a class="link-button" href="#" target="_blank" rel="noopener noreferrer">-->
+<!--                <span class="link-button-text">Code (soon)</span>-->
+<!--            </a>-->
+<!--            <a class="link-button" href="#" target="_blank" rel="noopener noreferrer">-->
+<!--                <span class="link-button-text">ComfyUI (soon)</span>-->
+<!--            </a>-->
+        </div>
+    </div>
+
+    <!-- provenance badge -->
+    <aside class="provenance">
+        <span class="lab-name">SketchX&nbsp;Lab</span>
+        <ul class="authors">
+            <li><a href="https://www.linkedin.com/in/dar-yen-chen-38074123a/" target="_blank" rel="noopener noreferrer">Dar-Yen Chen</a></li>
+            <li><a href="https://hmrishavbandy.github.io/" target="_blank" rel="noopener noreferrer">Hmrishav Bandyopadhyay</a></li>
+            <li><a href="https://www.linkedin.com/in/kz4225/" target="_blank" rel="noopener noreferrer">Kai Zou</a></li>
+            <li><a href="https://www.surrey.ac.uk/people/yi-zhe-song" target="_blank" rel="noopener noreferrer">Yi-Zhe Song</a></li>
+        </ul>
+    </aside>
+</header>
+
+<main>
+    <section>
+        <h2>Few-Step Sampling</h2>
+        <p class="intro">
+            Few-step diffusion models facilitate rapid inference, but generally lack support for CFG, making negative guidance ineffective.
+            <br>
+            NAG restores effective negative prompting, enabling direct suppression of visual, semantic, and stylistic attributes.
+            This enhances controllability and expands creative freedom across composition, style, and quality.
+        </p>
+
+        <h3 class="subsection">Flux-Schnell, 4 steps</h3>
+        <div class="grid" id="gridContainerFluxSchnell"></div>
+
+        <h3 class="subsection">SD3.5-Large-Turbo, 8 steps</h3>
+        <div class="grid" id="gridContainerLargeTurbo"></div>
+
+        <h3 class="subsection">Flux-Dev, 25 steps</h3>
+        <div class="grid" id="gridContainerFluxDev"></div>
+    </section>
+
+    <hr class="divider divider–gradient">
+
+    <section>
+        <h2>Sampling with CFG</h2>
+        <p class="intro">
+            NAG is a general enhancement to standard guidance strategies, such as CFG, offering advancements in multi-step models.
+        </p>
+
+        <h3 class="subsection">SD3.5-Large, 25 steps, CFG</h3>
+        <div class="grid" id="gridContainerLarge"></div>
+    </section>
+
+    <hr class="divider divider–gradient">
+
+    <section>
+        <h2>Video Generation</h2>
+        <p class="intro">
+            NAG extends robust control to video synthesis, enabling content suppression and quality enhancement. It highlights NAG’s capacity as a general-purpose mechanism for diffusion control across spatial and temporal domains.
+        </p>
+
+        <h3 class="subsection">Wan2.1-T2V-14B, 480p, 25 steps</h3>
+        <div class="grid" id="gridContainerWanT2V"></div>
+
+        <h3 class="subsection">Wan2.1-I2V-14B, 480p, 25 steps</h3>
+        <div class="grid" id="gridContainerWanI2V"></div>
+    </section>
+
+    <hr class="divider divider–gradient">
+
+    <section class="approach">
+        <h2>Approach</h2>
+        <p class="intro">
+            The prevailing approach to diffusion model control, Classifier-Free Guidance (CFG), enables negative guidance by extrapolating between positive and negative conditional outputs at each denoising step. However, in few-step regimes, CFG's assumption of consistent structure between diffusion branches breaks down, as these branches diverge dramatically at early steps. This divergence causes severe artifacts rather than controlled guidance.
+            <br>
+            Normalized Attention Guidance (NAG) operates in attention space by extrapolating positive and negative features Z<sup>+</sup> and Z<sup>-</sup>, followed by L1-based normalization and α-blending. This constrains feature deviation, suppresses out-of-manifold drift, and achieves stable, controllable guidance.
+        </p>
+        <div class="single-image">
+            <img src="./assets/architecture_4k_compressed.png" alt="Architecture">
+        </div>
+    </section>
+
+    <hr class="divider divider–gradient">
+
+    <section class="computational-cost">
+    <h2>Computational Cost</h2>
+    <p class="intro">
+        We measure the per-step sampling latency on NVIDIA A100 GPU.
+        Unlike CFG, which requires doubling the computation of sampling steps, NAG only applies additional computation to cross-attention layers or MM-DiT blocks.
+        <br>
+        In Flux, NAG incurs a similar cost to CFG, whereas in SD3.5-Large, SANA, SDXL and Wan2.1, it introduces significantly lower additional inference time.
+    </p>
+    <div class="table-wrapper">
+        <table class="cost-table">
+            <thead>
+            <tr>
+                <th>Model Family</th>
+                <th>Baseline</th>
+                <th>CFG</th>
+                <th>NAG</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>Flux</td>
+                <td>487 ms</td>
+                <td>+488 ms&nbsp;(100%)</td>
+                <td>+426 ms&nbsp;(87%)</td>
+            </tr>
+            <tr>
+                <td>SD3.5‐Large</td>
+                <td>231 ms</td>
+                <td>+219 ms&nbsp;(95%)</td>
+                <td>+109 ms&nbsp;(43%)</td>
+            </tr>
+            <tr>
+                <td>SANA</td>
+                <td>39 ms</td>
+                <td>+35 ms&nbsp;(90%)</td>
+                <td>+5 ms&nbsp;(13%)</td>
+            </tr>
+            <tr>
+                <td>SDXL</td>
+                <td>75 ms</td>
+                <td>+25 ms&nbsp;(34%)</td>
+                <td>+17 ms&nbsp;(22%)</td>
+            </tr>
+            <tr>
+                <td>Wan2.1</td>
+                <td>10.7 s</td>
+                <td>+10.7 s&nbsp;(100%)</td>
+                <td>+1.3 s&nbsp;(12%)</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+</main>
+
+<!-- ─ Modal ─ -->
+<div class="modal" id="zoomModal">
+    <div class="content">
+        <button class="icon-btn corner-close" aria-label="Close">
+            <svg xmlns="http://www.w3.org/2000/svg"
+                 viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <line x1="6" y1="6" x2="18" y2="18"/>
+                <line x1="6" y1="18" x2="18" y2="6"/>
+            </svg>
+        </button>
+    </div>
+</div>
+
+<footer class="site-footer"></footer>
+
+<script>
+    /*------------------------------------------------------
+      createPair
+    ------------------------------------------------------*/
+    function createPair(prompt, negativePrompt, imgArr, vidArr) {
+        const pair = document.createElement("div");
+        pair.className = "pair " + (vidArr ? "pair-video" : "pair-image");
+
+        // collect videos for sync
+        const videos = [];
+
+        // --- media (with badges) ---
+        const addMedia = (src, isImage, i) => {
+            const wrapper = document.createElement("div");
+            wrapper.className = "media-wrapper";
+            // make the wrapper fill its .pair
+            wrapper.style.height = "100%";
+            wrapper.style.position = "relative";
+            wrapper.style.flex = "1";          // if you ever switch to flex
+            wrapper.style.overflow = "hidden";
+
+            // badge
+            const badge = document.createElement("div");
+            badge.className = "badge";
+            badge.textContent = i === 0 ? "Baseline" : "NAG";
+            wrapper.appendChild(badge);
+
+            if (isImage) {
+                const img = document.createElement("img");
+                img.src = src;
+                img.style.display = "block";
+                img.style.width = "100%";
+                img.style.height = "100%";
+                img.style.objectFit = "cover";
+                wrapper.appendChild(img);
+            } else {
+                const vid = document.createElement("video");
+                Object.assign(vid, {
+                    src: src.trim(),
+                    preload: "auto",
+                    muted: true,
+                    loop: true,
+                    playsInline: true
+                    // no autoplay here
+                });
+                vid.style.display = "block";
+                vid.style.width = "100%";
+                vid.style.height = "100%";
+                vid.style.objectFit = "cover";
+                wrapper.appendChild(vid);
+
+                videos.push(vid);
+            }
+
+            pair.appendChild(wrapper);
+        };
+
+        imgArr?.forEach((src, i) => addMedia(src, true, i));
+        vidArr?.forEach((src, i) => addMedia(src, false, i));
+
+        // ── synchronize and start all videos together ─────────────
+        if (videos.length > 0) {
+            Promise.all(videos.map(v =>
+                v.readyState >= 3
+                    ? Promise.resolve()
+                    : new Promise(res => v.addEventListener("canplaythrough", res, {once: true}))
+            )).then(() => {
+                videos.forEach(v => {
+                    v.currentTime = 0;
+                });
+                // batch-play in the next tick
+                setTimeout(() => videos.forEach(v => v.play()), 0);
+            });
+        }
+
+        // stash for zoom modal
+        pair.dataset.img = imgArr ? imgArr.join(",") : "";
+        pair.dataset.video = vidArr ? vidArr.join(",") : "";
+
+        // --- overlay text (unchanged) ---
+        const overlay = document.createElement("div");
+        overlay.className = "overlay";
+        overlay.innerHTML = `
+      <div class="desc-block">
+        <div class="label">Prompt:</div>
+        <div class="text">${prompt}</div>
+      </div>
+      <div class="desc-block">
+        <div class="label">Negative prompt:</div>
+        <div class="text">${negativePrompt}</div>
+      </div>
+    `;
+
+        // --- zoom button (unchanged) ---
+        const btn = document.createElement("button");
+        btn.className = "icon-btn corner-zoom";
+        btn.setAttribute("aria-label", "Zoom in");
+        btn.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg"
+           viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 8V4h4"/>
+        <path d="M16 4h4v4"/>
+        <path d="M20 16v4h-4"/>
+        <path d="M8 20H4v-4"/>
+      </svg>
+    `;
+        btn.onclick = zoomHandler;
+
+        pair.append(overlay, btn);
+        return pair;
+    }
+
+    /*------------------------------------------------------
+      zoomHandler + close logic
+    ------------------------------------------------------*/
+    // ── Helper to close modal and restore scroll ─────────────
+    function closeModal() {
+        const modal = document.getElementById("zoomModal");
+        modal.style.display = "none";
+        document.body.style.overflow = ""; // restore scrolling
+    }
+
+    // ── Zoom-in handler ──────────────────────────────────────
+    function zoomHandler(e) {
+        e.stopPropagation();
+        const pair = e.currentTarget.parentElement;
+        const modal = document.getElementById("zoomModal");
+        const content = modal.querySelector(".content");
+
+        // clear existing media (but keep the close button)
+        Array.from(content.children).forEach(ch => {
+            if (!ch.classList.contains("icon-btn")) content.removeChild(ch);
+        });
+
+        // re-add images
+        if (pair.dataset.img) {
+            pair.dataset.img.split(",").forEach(src => {
+                const img = document.createElement("img");
+                img.src = src.trim();
+                content.appendChild(img);
+            });
+        }
+
+        // re-add videos
+        if (pair.dataset.video) {
+            pair.dataset.video.split(",").forEach(src => {
+                const vid = document.createElement("video");
+                Object.assign(vid, {
+                    src, width: 832, height: 480,
+                    autoplay: true, muted: true, loop: true, playsInline: true
+                });
+                content.appendChild(vid);
+            });
+        }
+
+        // show modal & lock background scroll
+        modal.style.display = "flex";
+        document.body.style.overflow = "hidden";
+    }
+
+    // close modal button gets unified classes
+    document.addEventListener("DOMContentLoaded", () => {
+        const modal = document.getElementById("zoomModal");
+        const closeBtn = modal.querySelector(".corner-close");
+
+        // close button
+        closeBtn.addEventListener("click", e => {
+            e.stopPropagation();
+            closeModal();
+        });
+
+        // backdrop click
+        modal.addEventListener("click", e => {
+            if (e.target.id === "zoomModal") closeModal();
+        });
+
+        // Escape key
+        document.addEventListener("keydown", e => {
+            if (e.key === "Escape") closeModal();
+        });
+
+        // attach zoomHandler to all zoom icons
+        document.querySelectorAll(".corner-zoom").forEach(btn =>
+            btn.addEventListener("click", zoomHandler)
+        );
+    });
+
+    // close modal
+    document.addEventListener("DOMContentLoaded", () => {
+        const modal = document.getElementById("zoomModal");
+        const closeBtn = modal.querySelector(".corner-close");
+
+        closeBtn.addEventListener("click", e => {
+            e.stopPropagation();           // prevent bubbling up to the modal click handler
+            modal.style.display = "none"; // hide the modal
+        });
+    });
+    document.getElementById("zoomModal").onclick = e => {
+        if (e.target.id === "zoomModal")
+            e.currentTarget.style.display = "none";
+    };
+    document.addEventListener("keydown", e => {
+        if (e.key === "Escape")
+            document.getElementById("zoomModal").style.display = "none";
+    });
+
+
+    /*------------------------------------------------------
+      Fetch manifest and populate grids
+    ------------------------------------------------------*/
+    document.addEventListener("DOMContentLoaded", () => {
+        fetch("assets/samples.json")
+            .then(r => r.json())
+            .then(manifest => {
+                Object.entries(manifest).forEach(([gridKey, {images, videos}]) => {
+                    const containerId = "gridContainer" + gridKey.slice("grid".length);
+                    const grid = document.getElementById(containerId);
+                    if (!grid) return;
+
+                    // images
+                    images.forEach(item => {
+                        const srcs = item.sample_nag
+                            ? [item.sample, item.sample_nag]
+                            : [item.sample];
+                        grid.appendChild(
+                            createPair(item.prompt, item.negative_prompt, srcs, null)
+                        );
+                    });
+
+                    // videos
+                    videos.forEach(item => {
+                        const srcs = item.sample_nag
+                            ? [item.sample, item.sample_nag]
+                            : [item.sample];
+                        grid.appendChild(
+                            createPair(item.prompt, item.negative_prompt, null, srcs)
+                        );
+                    });
+                });
+            })
+            .catch(err => console.error("Failed to load samples.json:", err));
+    });
+</script>
+
+
+</body>
+</html>
